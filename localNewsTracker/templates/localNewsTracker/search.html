@@ -1,0 +1,259 @@
+<!-- localNewsTracker/templates/localNewsTracker/search.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZIP Code Lookup & Local Bills</title> {# Updated Title #}
+    <style>
+        /* General Styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f8f9fa; /* Lighter background */
+            color: #343a40; /* Darker text */
+        }
+        .container {
+            max-width: 800px; /* Slightly wider container */
+            margin: 20px auto; /* Added top/bottom margin */
+            padding: 30px;
+            border: 1px solid #dee2e6; /* Lighter border */
+            border-radius: 8px;
+            background-color: #ffffff; /* White background */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Softer shadow */
+        }
+
+        /* Form Styling */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600; /* Slightly bolder */
+            color: #495057;
+        }
+        input[type="text"] {
+            width: 180px; /* Wider input */
+            padding: 12px; /* More padding */
+            margin-bottom: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box; /* Include padding in width */
+        }
+        button {
+            padding: 12px 25px; /* More padding */
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem; /* Match input */
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Results & Sections */
+        .results {
+            margin-top: 30px; /* More space */
+            border-top: 1px solid #e9ecef; /* Lighter separator */
+            padding-top: 25px;
+        }
+        .error {
+            color: #721c24; /* Darker red */
+            font-weight: 500; /* Medium weight */
+            margin-top: 20px; /* More space */
+            padding: 12px 15px; /* More padding */
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+        h2 {
+            margin-bottom: 25px;
+            color: #0056b3;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            font-size: 1.75rem; /* Larger heading */
+        }
+        h3 {
+            margin-top: 25px;
+            margin-bottom: 18px; /* More space below h3 */
+            color: #17a2b8; /* Teal color */
+            font-size: 1.4rem; /* Slightly larger h3 */
+        }
+        .results p {
+            margin: 8px 0; /* More spacing between paragraphs */
+            font-size: 1rem;
+        }
+        .results strong {
+            color: #495057;
+            margin-right: 5px; /* Space after bold label */
+        }
+        .results small {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .location-icon { /* Simple emoji icon */
+             display: inline-block;
+             margin-right: 8px;
+        }
+
+        /* Bills Section Specific Styling */
+        .bills-section {
+            margin-top: 40px; /* More separation */
+            border-top: 2px solid #17a2b8; /* Match h3 color */
+            padding-top: 25px;
+        }
+        .bills-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .bills-section li {
+            margin-bottom: 25px; /* More space between bills */
+            padding-bottom: 20px; /* More padding below */
+            border-bottom: 1px dashed #ced4da; /* Dashed separator */
+        }
+        .bills-section li:last-child {
+            border-bottom: none; /* Remove border from last item */
+            margin-bottom: 0; /* Remove bottom margin from last item */
+        }
+        .bills-section li .bill-header {
+            font-size: 1.1rem; /* Slightly larger bill number */
+            margin-bottom: 8px;
+        }
+        .bills-section li .bill-header strong a {
+            color: #0056b3; /* Darker blue for links */
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .bills-section li .bill-header strong a:hover {
+            text-decoration: underline;
+            color: #003d80; /* Darker on hover */
+        }
+        .bills-section li .bill-header span { /* For view count */
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-left: 10px;
+        }
+        .bills-section li p {
+            margin: 8px 0 0 0;
+            font-size: 0.95em; /* Slightly larger paragraph text */
+            color: #495057;
+        }
+         .bills-section li p strong { /* For Summary: / AI Summary: labels */
+            font-weight: 600;
+            color: #343a40;
+         }
+        .bills-section li p small {
+            display: block; /* Put action on new line */
+            margin-top: 8px;
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.85em;
+        }
+        .no-bills-message {
+            font-style: italic;
+            color: #6c757d;
+        }
+
+        /* AI Summary Tooltip Styling */
+        .ai-summary-tooltip {
+            display: none; /* Hidden by default */
+            margin-top: 10px; /* Space above tooltip */
+            padding: 10px;
+            background-color: #e9ecef; /* Light grey background */
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            font-size: 0.9em; /* Slightly smaller text */
+            position: relative; /* Needed for potential future absolute positioning */
+        }
+
+        .bills-section li:hover .ai-summary-tooltip {
+            display: block; /* Show on hover of the list item */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>ZIP Code Information Lookup</h2>
+
+        <form method="post">
+            {% csrf_token %} {# Important for security #}
+            <label for="zipcode">Enter 5-Digit ZIP Code:</label> {# Slightly clearer label #}
+            <input type="text" id="zipcode" name="zipcode" required pattern="\d{5}" title="Enter a 5-digit ZIP code" value="{{ submitted_zipcode|default:'' }}">
+            <button type="submit">Search</button>
+        </form>
+
+        {% if error_message %}
+            <p class="error">{{ error_message }}</p>
+        {% endif %}
+
+        {% if location_info %}
+            <div class="results">
+                <h3><span class="location-icon">📍</span> Location Information for ZIP Code {{ location_info.zip_code }}</h3>
+                <p><strong>City:</strong> {{ location_info.city|default:"N/A" }}</p>
+                <p><strong>County:</strong> {{ location_info.county|default:"N/A" }}</p>
+                <p><strong>State:</strong> {{ location_info.state|default:"N/A" }} ({{ location_info.state_code|default:"N/A" }})</p>
+                <p><strong>Coordinates:</strong> {{ location_info.latitude|default:"N/A" }}, {{ location_info.longitude|default:"N/A" }}</p>
+                {% if location_info.accuracy %}
+                <p><small>Accuracy: {{ location_info.accuracy }}</small></p>
+                {% endif %}
+            </div>
+        {% elif submitted_zipcode and not error_message %}
+             {# Handle case where search was done, location not found, but not specifically an error #}
+            <div class="results">
+                 <p>No detailed location information found for ZIP code {{ submitted_zipcode }}.</p>
+            </div>
+        {% endif %}
+
+        {# --- Bill Display Section --- #}
+        {% if top_bills %}
+            <div class="bills-section"> {# Removed 'results' class, uses specific 'bills-section' #}
+                <h3>Most Viewed Bills in {{ state_code }}</h3>
+                <ul>
+                    {% for bill in top_bills %}
+                        <li>
+                            <div class="bill-header">
+                                <strong><a href="{{ bill.bill_url|default:'#' }}" target="_blank" title="Go to LegiScan page for {{ bill.bill_number }}">{{ bill.bill_number }}</a></strong>
+                                <span>(Views: {{ bill.view_count }})</span>
+                            </div>
+
+                            {# Display Original Summary if it exists #}
+                            {% if bill.summary %}
+                                <p><strong>Summary:</strong> {{ bill.summary|truncatewords:40 }}</p>
+                            {% endif %}
+
+                            {# Display AI Summary - Add class here #}
+                            {% if bill.ai_summary %}
+                                <p class="ai-summary-tooltip"><strong>AI Summary:</strong> {{ bill.ai_summary }}</p> {# Added class="ai-summary-tooltip" #}
+                            {% else %}
+                                {# Optionally indicate if summary is missing or failed - hidden by default now #}
+                                {# <p class="ai-summary-tooltip"><small><em>AI Summary not yet available.</em></small></p> #}
+                            {% endif %}
+
+                            {% if bill.last_action %}
+                                <p><small>Last Action ({{ bill.last_action_date|date:"M d, Y"|default:"N/A" }}): {{ bill.last_action }}</small></p>
+                            {% endif %}
+                        </li>
+                    {% empty %} {# Added {% empty %} for case where query runs but returns no bills #}
+                        <p class="no-bills-message">No viewed bill data found for {{ state_code }}.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% elif submitted_zipcode and location_info and state_code %}
+            {# If location was found but top_bills was empty (e.g., state exists but no bills loaded/viewed) #}
+            <div class="bills-section">
+                <h3>Most Viewed Bills in {{ state_code }}</h3>
+                <p class="no-bills-message">No viewed bill data currently available for {{ state_code }}.</p>
+            </div>
+        {% endif %}
+        {# --- End Bill Display Section --- #}
+
+    </div> {# End of container div #}
+</body>
+</html>
