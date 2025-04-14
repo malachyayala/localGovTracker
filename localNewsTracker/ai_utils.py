@@ -3,6 +3,7 @@
 import os
 # Use the specific `google.generativeai` library
 from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 import logging
 from typing import Union
@@ -64,14 +65,23 @@ def generate_summary(bill_text: str) -> Union[str, None]:
 
     # WARNING: No artificial text limit. Might exceed API limits for very long bills.
 
-    prompt = f"""Summarize the key purpose and main changes proposed in the following legislative bill text in 2-4 concise sentences. Focus on what the bill does.
+    prompt = f"""You will be provided with the following legislative bill:
 
     Bill Text:
     ---
     {bill_text}
     ---
+    
+    Summarize this bill in a way that is easy for the everyday person to understand. 
+    Avoid legal jargon and technical terms. 
+    Focus on explaining how this bill might impact their daily lives.  
+    For example, mention any potential changes to taxes, regulations, or services.  
+    If the bill involves complex legal concepts, explain them using simple analogies or examples.  
+    Conclude with a brief statement summarizing the overall purpose and potential impact of the bill. 
 
-    Summary:"""
+    Summary:
+    
+    """
 
     try:
         # --- Use the configured client/model instance ---
@@ -79,7 +89,17 @@ def generate_summary(bill_text: str) -> Union[str, None]:
         # model = genai_client.get_model("models/gemini-1.5-flash-latest") # Construct model name
         # response = model.generate_content(
         response = client.models.generate_content(
-            model="gemini-2.0-flash", contents=prompt
+            model="gemini-2.0-flash", 
+            config=types.GenerateContentConfig(
+                system_instruction=f"""You are a legislative analyst tasked with explaining 
+                complex bills to the public in a clear and accessible way.
+                
+                * keep your summaries under 600 words
+                * include a bolded title with every summary
+                * keep it condense and to the point
+                * do not hallucinate
+                """),
+            contents=prompt
         )
         print(response.text)
         # --- End Client/Model Usage ---

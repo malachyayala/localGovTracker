@@ -17,9 +17,22 @@ class Committee(models.Model):
     def __str__(self):
         return f"{self.state_code} {self.chamber} - {self.name}"
 
-class Sponsor(models.Model):
+class Legislator(models.Model):
     state_code = models.CharField(max_length=2, db_index=True)
-    chamber = models.CharField(max_length=50, db_index=True, null=True, blank=True) # Some sponsors (like Rules Committee) might not have a chamber
+
+    CHAMBER_CHOICES = [
+        ('HOUSE', 'House'),
+        ('SENATE', 'Senate'),
+        ('OTHER', 'Other'),
+    ]
+    chamber = models.CharField(
+        max_length=50,
+        choices=CHAMBER_CHOICES,
+        db_index=True,
+        null=True,
+        blank=True
+    )
+    district = models.CharField(max_length=50, null=True, blank=True)
     name = models.CharField(max_length=255)
     party = models.CharField(max_length=50, null=True, blank=True) # e.g., 'R', 'D', 'I' or full names
     url = models.URLField(max_length=500, null=True, blank=True)
@@ -36,6 +49,7 @@ class Bill(models.Model):
     state_code = models.CharField(max_length=2, db_index=True)
     bill_number = models.CharField(max_length=50, db_index=True)
     session_year = models.IntegerField(db_index=True, null=True, blank=True)
+    sponsors = models.ManyToManyField(Legislator, related_name='sponsored_bills')
     bill_url = models.URLField(max_length=500, null=True, blank=True)
     summary = models.TextField(null=True, blank=True) # Original summary from CSV
     text_url = models.URLField(max_length=500, null=True, blank=True)

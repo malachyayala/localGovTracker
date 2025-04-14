@@ -199,10 +199,6 @@
                 <p><strong>City:</strong> {{ location_info.city|default:"N/A" }}</p>
                 <p><strong>County:</strong> {{ location_info.county|default:"N/A" }}</p>
                 <p><strong>State:</strong> {{ location_info.state|default:"N/A" }} ({{ location_info.state_code|default:"N/A" }})</p>
-                <p><strong>Coordinates:</strong> {{ location_info.latitude|default:"N/A" }}, {{ location_info.longitude|default:"N/A" }}</p>
-                {% if location_info.accuracy %}
-                <p><small>Accuracy: {{ location_info.accuracy }}</small></p>
-                {% endif %}
             </div>
         {% elif submitted_zipcode and not error_message %}
              {# Handle case where search was done, location not found, but not specifically an error #}
